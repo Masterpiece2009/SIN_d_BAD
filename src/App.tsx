@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { BookOpen, Dumbbell, Apple, Sun, Download, X } from 'lucide-react';
 import Quran from './components/Quran';
 import Adhkar from './components/Adhkar';
@@ -21,7 +21,9 @@ export default function App() {
             <span className="hidden sm:inline">تثبيت</span>
           </button>
           <h1 className="text-xl font-black text-zinc-100 tracking-wide flex items-center gap-2">
-            <img src="https://api.iconify.design/mdi:bat.svg?color=%23f97316" alt="Bat" className="w-7 h-7" />
+            <div className="w-8 h-8 bg-zinc-600 rounded-full flex items-center justify-center">
+              <img src="https://api.iconify.design/mdi:bat.svg?color=%2318181b" alt="Batman" className="w-5 h-5" />
+            </div>
             روتيني اليومي
           </h1>
         </div>
@@ -51,8 +53,8 @@ export default function App() {
               <X size={20} />
             </button>
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-orange-500/20">
-                <img src="https://api.iconify.design/mdi:bat.svg?color=%23f97316" alt="Bat" className="w-8 h-8" />
+              <div className="w-16 h-16 bg-zinc-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-500/20">
+                <img src="https://api.iconify.design/mdi:bat.svg?color=%2318181b" alt="Batman" className="w-10 h-10" />
               </div>
               <h2 className="text-2xl font-bold text-zinc-100 mb-2">حفظ التطبيق على هاتفك</h2>
               <p className="text-zinc-400 text-sm leading-relaxed">

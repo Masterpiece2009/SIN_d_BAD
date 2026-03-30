@@ -1,3 +1,4 @@
+import React from 'react';
 import { Droplet, Beef, Wheat, Flame, Info } from 'lucide-react';
 
 export default function Nutrition() {

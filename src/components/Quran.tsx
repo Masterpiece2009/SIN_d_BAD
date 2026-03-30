@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { ChevronRight, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronRight, Loader2, BookOpen } from 'lucide-react';
 
 const surahs = [
   { id: 36, name: 'سورة يس' },

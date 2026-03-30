@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 const days = [
   { id: 'saturday', ar: 'السبت', en: 'Saturday' },
@@ -9,7 +9,20 @@ const days = [
   { id: 'thursday', ar: 'الخميس', en: 'Thursday' },
 ];
 
-const workouts = {
+type Exercise = { name: string; sets: string; img: string };
+type WorkoutGroup = { name: string; exercises: Exercise[] };
+type WorkoutDay = {
+  title: string;
+  desc: string;
+  exercises?: Exercise[];
+  groups?: WorkoutGroup[];
+  rest?: boolean;
+  img?: string;
+  msg?: string;
+  subMsg?: string;
+};
+
+const workouts: Record<string, WorkoutDay> = {
   saturday: {
     title: 'السبت — صدر وتراي',
     desc: 'يوم الدفع والقوة',
@@ -150,7 +163,7 @@ export default function Workout() {
   );
 }
 
-function ExerciseCard({ ex }: { ex: any }) {
+const ExerciseCard: React.FC<{ ex: any }> = ({ ex }) => {
   return (
     <article className="relative bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 hover:border-orange-500/50 transition-all duration-300 group flex flex-col h-40 sm:h-48 shadow-lg hover:shadow-orange-500/10">
       <div className="absolute inset-0">
