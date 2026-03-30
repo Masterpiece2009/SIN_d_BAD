@@ -2,73 +2,98 @@ import { Droplet, Beef, Wheat, Flame, Info } from 'lucide-react';
 
 export default function Nutrition() {
   return (
-    <div className="space-y-4 animate-in fade-in duration-300">
-      <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-md">
-        <h2 className="text-2xl font-bold mb-2">خطة التغذية والمكملات</h2>
-        <p className="text-indigo-100 text-sm leading-relaxed font-medium">
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-orange-600 to-yellow-500"></div>
+        <div className="absolute -right-10 -top-10 opacity-5 group-hover:opacity-10 transition-opacity duration-500">
+          <img src="https://api.iconify.design/mdi:bat.svg?color=%23ffffff" className="w-40 h-40" alt="Bat" />
+        </div>
+        <h2 className="text-2xl font-black mb-3 text-zinc-100 relative z-10">خطة التغذية والمكملات</h2>
+        <p className="text-zinc-400 text-sm leading-relaxed font-medium relative z-10">
           التغذية السليمة هي المفتاح الأساسي لبناء العضلات والاستشفاء. التزم بالاحتياج اليومي لتحقيق أفضل النتائج.
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-        <div className="flex items-center space-x-3 space-x-reverse mb-4">
-          <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+      <div className="bg-zinc-900 rounded-2xl p-5 shadow-lg border border-zinc-800">
+        <div className="flex items-center space-x-3 space-x-reverse mb-5">
+          <div className="bg-orange-500/10 p-2 rounded-xl text-orange-500 border border-orange-500/20">
             <Info size={24} />
           </div>
-          <h3 className="text-lg font-bold text-gray-900">المكملات الأساسية</h3>
+          <h3 className="text-xl font-black text-zinc-100">المكملات الأساسية</h3>
         </div>
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-          <h4 className="font-bold text-blue-900 mb-1 text-lg">MuscleSeeds Creatine Monohydrate</h4>
-          <p className="text-sm text-blue-800 mb-3 font-bold bg-blue-100 inline-block px-3 py-1 rounded-full">
+        <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 relative overflow-hidden">
+          <div className="absolute left-0 top-0 w-1 h-full bg-orange-500"></div>
+          <h4 className="font-black text-orange-500 mb-2 text-lg">MuscleSeeds Creatine Monohydrate</h4>
+          <p className="text-xs text-zinc-300 mb-4 font-bold bg-zinc-800 inline-block px-3 py-1.5 rounded-md border border-zinc-700">
             الجرعة: 5 جرام يومياً (سكوب واحد)
           </p>
-          <ul className="text-sm text-blue-800 space-y-2 list-disc list-inside font-medium">
-            <li>يفضل تناوله بعد التمرين مع مصدر كربوهيدرات لسرعة الامتصاص.</li>
-            <li>في أيام الراحة، تناوله في أي وقت من اليوم.</li>
-            <li>تأكد من شرب كميات كافية من الماء (3-4 لتر يومياً) لتجنب الجفاف.</li>
-            <li>يساعد في زيادة القوة، تحسين الأداء، وزيادة الكتلة العضلية.</li>
+          <ul className="text-sm text-zinc-400 space-y-3 list-none font-medium">
+            <li className="flex items-start gap-2">
+              <span className="text-orange-500 mt-1">▪</span>
+              <span>يفضل تناوله بعد التمرين مع مصدر كربوهيدرات لسرعة الامتصاص.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-orange-500 mt-1">▪</span>
+              <span>في أيام الراحة، تناوله في أي وقت من اليوم.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-orange-500 mt-1">▪</span>
+              <span>تأكد من شرب كميات كافية من الماء (3-4 لتر يومياً) لتجنب الجفاف.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-orange-500 mt-1">▪</span>
+              <span>يساعد في زيادة القوة، تحسين الأداء، وزيادة الكتلة العضلية.</span>
+            </li>
           </ul>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <NutritionCard 
           icon={<Beef size={24} />} 
           title="البروتين" 
           desc="1.6 - 2.2 جم لكل كجم من وزنك. (دجاج، لحم، بيض، أسماك)"
-          color="bg-red-50 text-red-600 border-red-100"
+          color="text-red-500"
+          bg="bg-red-500/10"
+          border="border-red-500/20"
         />
         <NutritionCard 
           icon={<Wheat size={24} />} 
           title="الكربوهيدرات" 
           desc="مصدر الطاقة الأساسي للتمرين. (أرز، بطاطس، شوفان)"
-          color="bg-amber-50 text-amber-600 border-amber-100"
+          color="text-amber-500"
+          bg="bg-amber-500/10"
+          border="border-amber-500/20"
         />
         <NutritionCard 
           icon={<Flame size={24} />} 
           title="الدهون الصحية" 
           desc="لدعم الهرمونات وصحة المفاصل. (مكسرات، زيت زيتون)"
-          color="bg-orange-50 text-orange-600 border-orange-100"
+          color="text-orange-500"
+          bg="bg-orange-500/10"
+          border="border-orange-500/20"
         />
         <NutritionCard 
           icon={<Droplet size={24} />} 
           title="الماء" 
           desc="3 إلى 4 لتر يومياً، خاصة مع استخدام الكرياتين."
-          color="bg-cyan-50 text-cyan-600 border-cyan-100"
+          color="text-cyan-500"
+          bg="bg-cyan-500/10"
+          border="border-cyan-500/20"
         />
       </div>
     </div>
   );
 }
 
-function NutritionCard({ icon, title, desc, color }: { icon: React.ReactNode, title: string, desc: string, color: string }) {
+function NutritionCard({ icon, title, desc, color, bg, border }: { icon: React.ReactNode, title: string, desc: string, color: string, bg: string, border: string }) {
   return (
-    <div className={`p-4 rounded-xl border ${color} flex flex-col items-start`}>
-      <div className="mb-3 bg-white/50 p-2 rounded-lg mix-blend-multiply">
+    <div className={`p-4 sm:p-5 rounded-xl border border-zinc-800 bg-zinc-900 flex flex-col items-start hover:border-zinc-700 transition-colors`}>
+      <div className={`mb-4 ${bg} ${color} ${border} border p-2.5 rounded-xl`}>
         {icon}
       </div>
-      <h4 className="font-bold text-base mb-1 text-gray-900">{title}</h4>
-      <p className="text-xs text-gray-700 leading-relaxed font-medium">{desc}</p>
+      <h4 className="font-black text-base mb-1.5 text-zinc-100">{title}</h4>
+      <p className="text-xs text-zinc-400 leading-relaxed font-medium">{desc}</p>
     </div>
   );
 }
