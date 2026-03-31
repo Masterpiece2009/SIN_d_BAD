@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BookOpen, Dumbbell, Apple, Sun, Download, X } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { BookOpen, Dumbbell, Apple, Sun, Download, X, Volume2, VolumeX } from 'lucide-react';
 import Quran from './components/Quran';
 import Adhkar from './components/Adhkar';
 import Workout from './components/Workout';
@@ -8,11 +8,48 @@ import Nutrition from './components/Nutrition';
 export default function App() {
   const [activeTab, setActiveTab] = useState('workout');
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // Attempt to autoplay
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        setIsPlaying(true);
+      }).catch(error => {
+        // Autoplay prevented by browser, requires user interaction
+        console.log("Autoplay prevented. User interaction required.");
+        setIsPlaying(false);
+      });
+    }
+  }, []);
+
+  const toggleAudio = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 pb-20 text-zinc-100 selection:bg-orange-500/30 font-sans">
       <header className="bg-zinc-900/80 backdrop-blur-md shadow-lg sticky top-0 z-10 border-b border-zinc-800">
         <div className="px-4 py-4 text-center relative flex justify-center items-center max-w-md mx-auto">
+          <button
+            onClick={toggleAudio}
+            className="absolute left-4 text-zinc-400 hover:text-orange-500 transition-colors bg-zinc-800/50 p-2 rounded-full border border-zinc-700/50"
+            title="تشغيل/إيقاف الموسيقى"
+          >
+            {isPlaying ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </button>
           <button 
             onClick={() => setShowInstallModal(true)}
             className="absolute right-4 text-orange-500 hover:text-orange-400 flex items-center gap-1 bg-orange-500/10 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border border-orange-500/20"
@@ -28,6 +65,12 @@ export default function App() {
           </h1>
         </div>
       </header>
+
+      {/* Audio element for background music */}
+      <audio ref={audioRef} loop>
+        {/* Using a placeholder epic track. Replace src with actual Hans Zimmer track URL if available */}
+        <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=epic-hollywood-trailer-9489.mp3" type="audio/mpeg" />
+      </audio>
 
       <main className="p-4 max-w-2xl mx-auto w-full">
         {activeTab === 'quran' && <Quran />}
