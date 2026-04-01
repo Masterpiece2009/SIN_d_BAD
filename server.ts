@@ -18,18 +18,72 @@ async function startServer() {
       let data = '';
       response.on('data', chunk => data += chunk);
       response.on('end', () => {
-        const results: { id: string, name: string, url: string }[] = [];
+        const songs: { id: string, name: string, type: 'song' }[] = [];
+        const artists: { id: string, name: string, type: 'artist' }[] = [];
+        const seenSongIds = new Set<string>();
+        const seenArtistIds = new Set<string>();
+        
         // Regex to match song links
-        const regex = /<a href="https:\/\/www\.albumaty\.com\/song\/(\d+)\.html">([^<]+)<\/a>/g;
+        const songRegex = /<a href="https:\/\/www\.albumaty\.com\/song\/(\d+)\.html">([^<]+)<\/a>/g;
         let match;
-        while ((match = regex.exec(data)) !== null) {
-          results.push({
-            id: match[1],
-            name: match[2].trim(),
-            url: `https://www.albumaty.com/song/${match[1]}.html`
-          });
+        while ((match = songRegex.exec(data)) !== null && songs.length < 30) {
+          const id = match[1];
+          if (!seenSongIds.has(id)) {
+            seenSongIds.add(id);
+            songs.push({
+              id: id,
+              name: match[2].trim(),
+              type: 'song'
+            });
+          }
         }
-        res.json({ results });
+
+        // Regex to match artist links
+        const artistRegex = /<a href="https:\/\/www\.albumaty\.com\/singer\/(\d+)\.html">([^<]+)<\/a>/g;
+        while ((match = artistRegex.exec(data)) !== null && artists.length < 10) {
+          const id = match[1];
+          if (!seenArtistIds.has(id)) {
+            seenArtistIds.add(id);
+            artists.push({
+              id: id,
+              name: match[2].trim(),
+              type: 'artist'
+            });
+          }
+        }
+
+        res.json({ results: [...artists, ...songs] });
+      });
+    }).on('error', (err) => {
+      res.status(500).json({ error: err.message });
+    });
+  });
+
+  app.get("/api/artist", (req, res) => {
+    const id = req.query.id as string;
+    if (!id) {
+      return res.status(400).json({ error: "ID is required" });
+    }
+    https.get(`https://www.albumaty.com/singer/${id}.html`, (response) => {
+      let data = '';
+      response.on('data', chunk => data += chunk);
+      response.on('end', () => {
+        const songs: { id: string, name: string, type: 'song' }[] = [];
+        const seenIds = new Set<string>();
+        const songRegex = /<a href="https:\/\/www\.albumaty\.com\/song\/(\d+)\.html">([^<]+)<\/a>/g;
+        let match;
+        while ((match = songRegex.exec(data)) !== null && songs.length < 50) {
+          const id = match[1];
+          if (!seenIds.has(id)) {
+            seenIds.add(id);
+            songs.push({
+              id: id,
+              name: match[2].trim(),
+              type: 'song'
+            });
+          }
+        }
+        res.json({ results: songs });
       });
     }).on('error', (err) => {
       res.status(500).json({ error: err.message });

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BookOpen, Dumbbell, Apple, Sun, Download, X, Volume2, VolumeX, Music, Timer, Play, Pause, RotateCcw, Quote, Moon, Compass, Search, Loader2 } from 'lucide-react';
+import { BookOpen, Dumbbell, Apple, Sun, Download, X, Volume2, VolumeX, Music, Timer, Play, Pause, RotateCcw, Quote, Moon, Compass, Search, Loader2, User } from 'lucide-react';
 import Quran from './components/Quran';
 import Adhkar from './components/Adhkar';
 import Workout from './components/Workout';
@@ -48,7 +48,7 @@ export default function App() {
   const [audioError, setAudioError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<{id: string, name: string, url: string}[]>([]);
+  const [searchResults, setSearchResults] = useState<{id: string, name: string, type: 'song' | 'artist'}[]>([]);
   const [audioTab, setAudioTab] = useState<'music' | 'quran'>('music');
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -172,21 +172,28 @@ export default function App() {
     }
   };
 
-  const handleAddTrack = async (track: {id: string, name: string, url: string}) => {
+  const handleAddTrack = async (track: {id: string, name: string, type: 'song' | 'artist'}) => {
     setIsSearching(true);
     setAudioError(null);
     try {
-      const res = await fetch(`/api/song?id=${track.id}`);
-      if (!res.ok) throw new Error('Failed to fetch song URL');
-      const data = await res.json();
-      
-      if (data.url) {
-        handleAddDirectTrack({ id: track.id, name: track.name, url: data.url });
+      if (track.type === 'artist') {
+        const res = await fetch(`/api/artist?id=${track.id}`);
+        if (!res.ok) throw new Error('Failed to fetch artist songs');
+        const data = await res.json();
+        setSearchResults(data.results || []);
       } else {
-        throw new Error('No audio URL found');
+        const res = await fetch(`/api/song?id=${track.id}`);
+        if (!res.ok) throw new Error('Failed to fetch song URL');
+        const data = await res.json();
+        
+        if (data.url) {
+          handleAddDirectTrack({ id: track.id, name: track.name, url: data.url });
+        } else {
+          throw new Error('No audio URL found');
+        }
       }
     } catch (err) {
-      setAudioError('تعذر تحميل هذه الأغنية.');
+      setAudioError('تعذر تحميل البيانات.');
     } finally {
       setIsSearching(false);
     }
@@ -332,7 +339,7 @@ export default function App() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="ابحث عن أغنية (Albumaty)..."
+                    placeholder="ابحث عن أغنية أو فنان..."
                     className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-100 focus:outline-none focus:border-orange-500 transition-colors"
                   />
                   <button
@@ -366,8 +373,19 @@ export default function App() {
                       onClick={() => handleAddTrack(track)}
                       className="w-full text-right p-3 rounded-xl border border-zinc-800 bg-zinc-950/50 text-zinc-300 hover:bg-zinc-800 transition-all flex justify-between items-center mb-2"
                     >
-                      <span className="font-bold text-sm truncate pr-2">{track.name}</span>
-                      <Download size={16} className="text-orange-500 shrink-0" />
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        {track.type === 'artist' ? (
+                          <User size={16} className="text-zinc-500 shrink-0" />
+                        ) : (
+                          <Music size={16} className="text-zinc-500 shrink-0" />
+                        )}
+                        <span className="font-bold text-sm truncate">{track.name}</span>
+                      </div>
+                      {track.type === 'artist' ? (
+                        <span className="text-xs text-orange-500 font-bold shrink-0">عرض الأغاني</span>
+                      ) : (
+                        <Download size={16} className="text-orange-500 shrink-0" />
+                      )}
                     </button>
                   ))}
                 </div>
