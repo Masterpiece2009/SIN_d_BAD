@@ -309,16 +309,22 @@ export default function App() {
       </nav>
 
       {showMusicModal && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative animate-in zoom-in-95 duration-200">
+        <div 
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200"
+          onDoubleClick={() => setShowMusicModal(false)}
+        >
+          <div 
+            className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative animate-in zoom-in-95 duration-200"
+            onDoubleClick={(e) => e.stopPropagation()}
+          >
             <button 
               onClick={() => setShowMusicModal(false)}
               className="absolute top-4 left-4 text-zinc-400 hover:text-zinc-200 bg-zinc-800 p-1 rounded-full transition-colors"
             >
               <X size={20} />
             </button>
-            <div className="text-center mb-6">
-              <div className="w-12 h-12 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-orange-500/20">
+            <div className="text-center mb-6" onDoubleClick={() => setShowMusicModal(false)}>
+              <div className="w-12 h-12 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-orange-500/20 cursor-pointer hover:bg-orange-500/20 transition-colors" title="انقر مرتين للإغلاق">
                 <Music size={24} />
               </div>
               <h2 className="text-2xl font-bold text-zinc-100 mb-2">الموسيقى الخلفية</h2>
@@ -401,7 +407,7 @@ export default function App() {
               {tracks.map(track => {
                 const isCustom = customTracks.some(t => t.id === track.id);
                 return (
-                  <div key={track.id} className="flex gap-2">
+                  <div key={track.id} className="flex gap-2 mb-2">
                     <button
                       onClick={() => handleTrackSelect(track.id)}
                       className={`flex-1 text-right p-3 rounded-xl border transition-all flex justify-between items-center ${
@@ -411,8 +417,17 @@ export default function App() {
                       }`}
                     >
                       <span className="font-bold text-sm truncate pr-2">{track.name}</span>
-                      {selectedTrackId === track.id && isPlaying && (
-                        <Volume2 size={16} className="animate-pulse text-orange-500 shrink-0" />
+                      {selectedTrackId === track.id && (
+                        <div 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleAudio();
+                          }}
+                          className="bg-orange-500 text-white p-1.5 rounded-lg hover:bg-orange-600 transition-colors shrink-0 shadow-md"
+                          title={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
+                        >
+                          {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                        </div>
                       )}
                     </button>
                     {isCustom && (

@@ -7,51 +7,61 @@ function WeatherWidget() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+
+    const fetchWeather = async (latitude: number, longitude: number) => {
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+        if (!res.ok) throw new Error('Failed to fetch weather');
+        const data = await res.json();
+        
+        if (!isMounted) return;
+
+        const code = data.current_weather.weathercode;
+        let condition = 'مشمس';
+        let icon = <Sun size={24} className="text-yellow-500" />;
+        
+        if (code >= 1 && code <= 3) {
+          condition = 'غائم';
+          icon = <Cloud size={24} className="text-zinc-400" />;
+        } else if (code >= 51 && code <= 65) {
+          condition = 'ممطر';
+          icon = <CloudRain size={24} className="text-blue-400" />;
+        } else if (code >= 71) {
+          condition = 'غائم / ممطر';
+          icon = <CloudRain size={24} className="text-blue-400" />;
+        }
+
+        setWeather({
+          temp: Math.round(data.current_weather.temperature),
+          condition,
+          icon
+        });
+      } catch (err) {
+        if (isMounted) setError(true);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
     if (!navigator.geolocation) {
-      setError(true);
-      setLoading(false);
+      fetchWeather(30.0444, 31.2357); // Cairo fallback
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
-          if (!res.ok) throw new Error('Failed to fetch weather');
-          const data = await res.json();
-          
-          const code = data.current_weather.weathercode;
-          let condition = 'مشمس';
-          let icon = <Sun size={24} className="text-yellow-500" />;
-          
-          if (code >= 1 && code <= 3) {
-            condition = 'غائم';
-            icon = <Cloud size={24} className="text-zinc-400" />;
-          } else if (code >= 51 && code <= 65) {
-            condition = 'ممطر';
-            icon = <CloudRain size={24} className="text-blue-400" />;
-          } else if (code >= 71) {
-            condition = 'غائم / ممطر';
-            icon = <CloudRain size={24} className="text-blue-400" />;
-          }
-
-          setWeather({
-            temp: Math.round(data.current_weather.temperature),
-            condition,
-            icon
-          });
-        } catch (err) {
-          setError(true);
-        } finally {
-          setLoading(false);
-        }
+      (position) => {
+        fetchWeather(position.coords.latitude, position.coords.longitude);
       },
       () => {
-        setError(true);
-        setLoading(false);
-      }
+        fetchWeather(30.0444, 31.2357); // Cairo fallback on error
+      },
+      { timeout: 5000, maximumAge: 600000 }
     );
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (loading) {
