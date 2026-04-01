@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BookOpen, Dumbbell, Apple, Sun, Download, X, Volume2, VolumeX, Music, Timer, Play, Pause, RotateCcw, Quote, Moon, Compass, Search, Loader2, User } from 'lucide-react';
+import { BookOpen, Dumbbell, Apple, Sun, Download, X, Volume2, VolumeX, Music, Timer, Play, Pause, RotateCcw, Quote, Moon, Compass, Search, Loader2, User, MapPin, Film } from 'lucide-react';
 import Quran from './components/Quran';
 import Adhkar from './components/Adhkar';
 import Workout from './components/Workout';
 import Nutrition from './components/Nutrition';
 import PrayerTimes from './components/PrayerTimes';
+import Places from './components/Places';
+import Movies from './components/Movies';
 
 const defaultTracks = [
   { id: 'chill_1', name: 'موسيقى بديلة 1', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
@@ -292,6 +294,8 @@ export default function App() {
         {activeTab === 'workout' && <Workout />}
         {activeTab === 'nutrition' && <Nutrition />}
         {activeTab === 'prayer' && <PrayerTimes />}
+        {activeTab === 'places' && <Places />}
+        {activeTab === 'movies' && <Movies />}
       </main>
 
       <nav className="fixed bottom-0 w-full bg-zinc-900/95 backdrop-blur-md border-t border-zinc-800 flex justify-around items-center h-16 max-w-md mx-auto left-0 right-0 z-20 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-x-auto hide-scrollbar px-2">
@@ -300,6 +304,8 @@ export default function App() {
         <NavItem icon={<Sun size={24} />} label="الأذكار" isActive={activeTab === 'adhkar'} onClick={() => setActiveTab('adhkar')} />
         <NavItem icon={<BookOpen size={24} />} label="القرآن" isActive={activeTab === 'quran'} onClick={() => setActiveTab('quran')} />
         <NavItem icon={<Compass size={24} />} label="الصلاة" isActive={activeTab === 'prayer'} onClick={() => setActiveTab('prayer')} />
+        <NavItem icon={<MapPin size={24} />} label="أماكن" isActive={activeTab === 'places'} onClick={() => setActiveTab('places')} />
+        <NavItem icon={<Film size={24} />} label="أفلام" isActive={activeTab === 'movies'} onClick={() => setActiveTab('movies')} />
       </nav>
 
       {showMusicModal && (

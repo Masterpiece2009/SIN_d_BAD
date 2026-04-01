@@ -1,5 +1,7 @@
 {
-  "name": "",
-  "description": "",
-  "requestFramePermissions": []
+  "name": "روتيني اليومي",
+  "description": "تطبيق شامل للروتين اليومي يتضمن الرياضة، التغذية، الأذكار، القرآن، مواقيت الصلاة، والبحث عن الأماكن القريبة.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
@@ -8,6 +9,64 @@ async function startServer() {
   const PORT = 3000;
 
   // API routes
+  app.get("/api/env", (req, res) => {
+    res.json({
+      gemini: !!process.env.GEMINI_API_KEY,
+      length: process.env.GEMINI_API_KEY?.length,
+      val: process.env.GEMINI_API_KEY?.substring(0, 5)
+    });
+  });
+
+  app.get("/api/places", async (req, res) => {
+    const query = req.query.q as string;
+    const lat = parseFloat(req.query.lat as string);
+    const lng = parseFloat(req.query.lng as string);
+
+    if (!query) {
+      return res.status(400).json({ error: "Query is required" });
+    }
+
+    try {
+      console.log("API Key length inside server:", process.env.GEMINI_API_KEY?.length);
+      const { GoogleGenAI } = await import("@google/genai");
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Find ${query} nearby.`,
+        config: {
+          tools: [{ googleMaps: {} }],
+          toolConfig: {
+            retrievalConfig: {
+              latLng: {
+                latitude: lat || 30.0444, // Default to Cairo if not provided
+                longitude: lng || 31.2357
+              }
+            }
+          }
+        }
+      });
+
+      const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+      const places = [];
+      if (chunks) {
+        for (const chunk of chunks) {
+          if (chunk.maps) {
+            places.push({
+              uri: chunk.maps.uri,
+              title: chunk.maps.title,
+            });
+          }
+        }
+      }
+      
+      res.json({ text: response.text, places });
+    } catch (error: any) {
+      console.error("Places API Error:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch places" });
+    }
+  });
+
   app.get("/api/search", (req, res) => {
     const query = req.query.q as string;
     if (!query) {
