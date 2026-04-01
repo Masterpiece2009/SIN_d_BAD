@@ -36,8 +36,11 @@ async function startServer() {
     });
   });
 
-  app.get("/api/song/:id", (req, res) => {
-    const id = req.params.id;
+  app.get("/api/song", (req, res) => {
+    const id = req.query.id as string;
+    if (!id) {
+      return res.status(400).json({ error: "ID is required" });
+    }
     https.get(`https://www.albumaty.com/song/${id}.html`, (response) => {
       let data = '';
       response.on('data', chunk => data += chunk);

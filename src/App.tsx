@@ -175,7 +175,7 @@ export default function App() {
     setIsSearching(true);
     setAudioError(null);
     try {
-      const res = await fetch(`/api/song/${track.id}`);
+      const res = await fetch(`/api/song?id=${track.id}`);
       if (!res.ok) throw new Error('Failed to fetch song URL');
       const data = await res.json();
       
