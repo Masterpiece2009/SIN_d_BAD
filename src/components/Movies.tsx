@@ -83,8 +83,23 @@ export default function Movies() {
               ></iframe>
             </div>
             
-            <h3 className="text-xl font-bold text-zinc-100 mt-4">{selectedMovie.title}</h3>
-            {selectedMovie.year && <p className="text-zinc-400 text-sm">سنة الإصدار: {selectedMovie.year}</p>}
+            <div className="flex gap-4 items-start mt-4 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
+              <div className="w-20 h-28 sm:w-24 sm:h-36 bg-zinc-900 rounded-lg overflow-hidden flex-shrink-0 shadow-lg">
+                <img 
+                  src={`https://archive.org/services/img/${selectedMovie.identifier}`} 
+                  alt={selectedMovie.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150x200?text=No+Image';
+                  }}
+                />
+              </div>
+              <div className="flex-1 py-1">
+                <h3 className="text-lg sm:text-xl font-bold text-zinc-100 mb-2">{selectedMovie.title}</h3>
+                {selectedMovie.year && <p className="text-zinc-400 text-sm mb-1">سنة الإصدار: {selectedMovie.year}</p>}
+                {selectedMovie.downloads && <p className="text-zinc-500 text-sm">{selectedMovie.downloads.toLocaleString()} مشاهدة</p>}
+              </div>
+            </div>
           </div>
         ) : (
           <>
