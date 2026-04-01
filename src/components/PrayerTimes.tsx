@@ -1,5 +1,152 @@
-import React, { useState, useEffect } from 'react';
-import { Compass, MapPin, Clock } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Compass, MapPin, Clock, Navigation } from 'lucide-react';
+
+function getQiblaAngle(lat: number, lng: number) {
+  const meccaLat = 21.422487;
+  const meccaLng = 39.826206;
+  
+  const latR = lat * Math.PI / 180;
+  const lngR = lng * Math.PI / 180;
+  const meccaLatR = meccaLat * Math.PI / 180;
+  const meccaLngR = meccaLng * Math.PI / 180;
+  
+  const y = Math.sin(meccaLngR - lngR);
+  const x = Math.cos(latR) * Math.tan(meccaLatR) - Math.sin(latR) * Math.cos(meccaLngR - lngR);
+  
+  let qibla = Math.atan2(y, x) * 180 / Math.PI;
+  return (qibla + 360) % 360;
+}
+
+function QiblaCompass({ lat, lng }: { lat: number, lng: number }) {
+  const [heading, setHeading] = useState<number | null>(null);
+  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+  const qiblaAngle = getQiblaAngle(lat, lng);
+
+  const requestAccess = useCallback(async () => {
+    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+      try {
+        const permissionState = await (DeviceOrientationEvent as any).requestPermission();
+        if (permissionState === 'granted') {
+          setPermissionGranted(true);
+        } else {
+          setPermissionGranted(false);
+        }
+      } catch (error) {
+        console.error(error);
+        setPermissionGranted(false);
+      }
+    } else {
+      setPermissionGranted(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (permissionGranted === null) {
+      if (typeof (DeviceOrientationEvent as any).requestPermission !== 'function') {
+        setPermissionGranted(true);
+      }
+      return;
+    }
+
+    if (!permissionGranted) return;
+
+    const handleOrientation = (event: DeviceOrientationEvent) => {
+      let webkitCompassHeading = (event as any).webkitCompassHeading;
+      if (webkitCompassHeading !== undefined) {
+        setHeading(webkitCompassHeading);
+      } else if (event.alpha !== null) {
+        // For Android, alpha is usually relative, but if deviceorientationabsolute is used, it's absolute.
+        // We'll use 360 - alpha as a fallback.
+        setHeading(360 - event.alpha);
+      }
+    };
+
+    window.addEventListener('deviceorientationabsolute', handleOrientation as any);
+    window.addEventListener('deviceorientation', handleOrientation);
+
+    return () => {
+      window.removeEventListener('deviceorientationabsolute', handleOrientation as any);
+      window.removeEventListener('deviceorientation', handleOrientation);
+    };
+  }, [permissionGranted]);
+
+  if (permissionGranted === null || permissionGranted === false) {
+    return (
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-lg text-center">
+        <div className="w-16 h-16 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-orange-500/20">
+          <Compass size={32} />
+        </div>
+        <h3 className="text-xl font-black text-zinc-100 mb-2">اتجاه القبلة</h3>
+        <p className="text-zinc-400 text-sm leading-relaxed mb-4">
+          نحتاج إلى إذن للوصول إلى بوصلة الهاتف لتحديد اتجاه القبلة بدقة.
+        </p>
+        <button 
+          onClick={requestAccess}
+          className="inline-flex items-center justify-center gap-2 bg-orange-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-orange-500 transition-colors shadow-[0_0_20px_rgba(249,115,22,0.3)] w-full sm:w-auto"
+        >
+          <Compass size={18} />
+          تفعيل البوصلة
+        </button>
+      </div>
+    );
+  }
+
+  const rotation = heading !== null ? qiblaAngle - heading : 0;
+
+  return (
+    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-lg text-center overflow-hidden relative">
+      <h3 className="text-xl font-black text-zinc-100 mb-6">اتجاه القبلة</h3>
+      
+      <div className="relative w-48 h-48 mx-auto mb-4">
+        {/* Compass Background */}
+        <div 
+          className="absolute inset-0 rounded-full border-4 border-zinc-800 flex items-center justify-center transition-transform duration-200 ease-out"
+          style={{ transform: `rotate(${heading !== null ? -heading : 0}deg)` }}
+        >
+          <div className="absolute top-2 text-red-500 font-bold text-sm">N</div>
+          <div className="absolute bottom-2 text-zinc-500 font-bold text-sm">S</div>
+          <div className="absolute right-2 text-zinc-500 font-bold text-sm">E</div>
+          <div className="absolute left-2 text-zinc-500 font-bold text-sm">W</div>
+          
+          {/* Compass Ticks */}
+          {[...Array(12)].map((_, i) => (
+            <div 
+              key={i} 
+              className="absolute w-1 h-3 bg-zinc-700 rounded-full"
+              style={{ transform: `rotate(${i * 30}deg) translateY(-20px)` }}
+            />
+          ))}
+        </div>
+
+        {/* Qibla Pointer */}
+        <div 
+          className="absolute inset-0 flex items-center justify-center transition-transform duration-200 ease-out"
+          style={{ transform: `rotate(${rotation}deg)` }}
+        >
+          <div className="w-1 h-24 bg-gradient-to-t from-transparent via-orange-500 to-orange-500 rounded-full relative -top-12">
+            <div className="absolute -top-2 -left-3 text-orange-500">
+              <Navigation size={28} className="fill-orange-500" />
+            </div>
+          </div>
+        </div>
+        
+        {/* Center Dot */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-zinc-900 border-2 border-orange-500 rounded-full z-10"></div>
+      </div>
+
+      <div className="text-zinc-400 text-sm font-mono" dir="ltr">
+        {heading !== null ? (
+          <div className="flex justify-center gap-4">
+            <div>Qibla: {Math.round(qiblaAngle)}°</div>
+            <div>Heading: {Math.round(heading)}°</div>
+          </div>
+        ) : (
+          <span className="animate-pulse">جاري معايرة البوصلة...</span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 type PrayerTimesData = {
   Fajr: string;
@@ -131,24 +278,7 @@ export default function PrayerTimes() {
       </div>
 
       {location && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-lg text-center">
-          <div className="w-16 h-16 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-orange-500/20">
-            <Compass size={32} />
-          </div>
-          <h3 className="text-xl font-black text-zinc-100 mb-2">اتجاه القبلة</h3>
-          <p className="text-zinc-400 text-sm leading-relaxed mb-4">
-            يمكنك استخدام تطبيقات البوصلة في هاتفك وتوجيهها نحو مكة المكرمة.
-          </p>
-          <a 
-            href={`https://qiblafinder.withgoogle.com/intl/ar/`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 bg-orange-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-orange-500 transition-colors shadow-[0_0_20px_rgba(249,115,22,0.3)] w-full sm:w-auto"
-          >
-            <Compass size={18} />
-            تحديد القبلة عبر Google
-          </a>
-        </div>
+        <QiblaCompass lat={location.lat} lng={location.lng} />
       )}
     </div>
   );

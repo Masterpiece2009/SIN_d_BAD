@@ -1,5 +1,91 @@
 import React, { useState, useEffect } from 'react';
-import { Timer, X, Flame, Plus, Trash2, Edit2, Save } from 'lucide-react';
+import { Timer, X, Flame, Plus, Trash2, Edit2, Save, Cloud, Sun, CloudRain, Loader2 } from 'lucide-react';
+
+function WeatherWidget() {
+  const [weather, setWeather] = useState<{ temp: number, condition: string, icon: React.ReactNode } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setError(true);
+      setLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+          if (!res.ok) throw new Error('Failed to fetch weather');
+          const data = await res.json();
+          
+          const code = data.current_weather.weathercode;
+          let condition = 'مشمس';
+          let icon = <Sun size={24} className="text-yellow-500" />;
+          
+          if (code >= 1 && code <= 3) {
+            condition = 'غائم';
+            icon = <Cloud size={24} className="text-zinc-400" />;
+          } else if (code >= 51 && code <= 65) {
+            condition = 'ممطر';
+            icon = <CloudRain size={24} className="text-blue-400" />;
+          } else if (code >= 71) {
+            condition = 'غائم / ممطر';
+            icon = <CloudRain size={24} className="text-blue-400" />;
+          }
+
+          setWeather({
+            temp: Math.round(data.current_weather.temperature),
+            condition,
+            icon
+          });
+        } catch (err) {
+          setError(true);
+        } finally {
+          setLoading(false);
+        }
+      },
+      () => {
+        setError(true);
+        setLoading(false);
+      }
+    );
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-lg flex items-center justify-center h-[76px] mb-4">
+        <Loader2 size={20} className="text-orange-500 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !weather) {
+    return null;
+  }
+
+  return (
+    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-lg flex items-center justify-between mb-4">
+      <div className="flex items-center gap-3">
+        <div className="bg-zinc-800/50 p-2 rounded-xl border border-zinc-700/50">
+          {weather.icon}
+        </div>
+        <div>
+          <h4 className="font-bold text-zinc-100 text-sm">الطقس الآن</h4>
+          <div className="text-xs text-zinc-400">{weather.condition}</div>
+        </div>
+      </div>
+      <div className="flex items-center gap-1">
+        <div className="text-2xl font-black text-zinc-100 font-mono">
+          {weather.temp}°
+        </div>
+        <span className="text-xs text-zinc-500 font-bold">C</span>
+      </div>
+    </div>
+  );
+}
 
 const days = [
   { id: 'saturday', ar: 'السبت', en: 'Saturday' },
@@ -170,6 +256,7 @@ export default function Workout() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
+      <WeatherWidget />
       <StreakCounter />
       
       <div className="flex overflow-x-auto pb-4 -mx-4 px-4 space-x-2 space-x-reverse hide-scrollbar">

@@ -49,6 +49,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<{id: string, name: string, url: string}[]>([]);
+  const [audioTab, setAudioTab] = useState<'music' | 'quran'>('music');
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const [isLightMode, setIsLightMode] = useState(() => {
@@ -180,23 +181,7 @@ export default function App() {
       const data = await res.json();
       
       if (data.url) {
-        const newTrack = { id: track.id, name: track.name, url: data.url };
-        const updatedTracks = [...customTracks.filter(t => t.id !== track.id), newTrack];
-        setCustomTracks(updatedTracks);
-        localStorage.setItem('customTracks', JSON.stringify(updatedTracks));
-        handleTrackSelect(track.id);
-        setSearchResults([]);
-        setSearchQuery('');
-        
-        // Auto-play the newly added track
-        setTimeout(() => {
-          if (audioRef.current) {
-            audioRef.current.play().catch(err => {
-               console.log("Auto-play prevented:", err);
-               setAudioError("تعذر تشغيل المقطع تلقائياً.");
-            });
-          }
-        }, 100);
+        handleAddDirectTrack({ id: track.id, name: track.name, url: data.url });
       } else {
         throw new Error('No audio URL found');
       }
@@ -205,6 +190,25 @@ export default function App() {
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const handleAddDirectTrack = (track: {id: string, name: string, url: string}) => {
+    const updatedTracks = [...customTracks.filter(t => t.id !== track.id), track];
+    setCustomTracks(updatedTracks);
+    localStorage.setItem('customTracks', JSON.stringify(updatedTracks));
+    handleTrackSelect(track.id);
+    setSearchResults([]);
+    setSearchQuery('');
+    
+    // Auto-play the newly added track
+    setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.play().catch(err => {
+           console.log("Auto-play prevented:", err);
+           setAudioError("تعذر تشغيل المقطع تلقائياً.");
+        });
+      }
+    }, 100);
   };
 
   return (
@@ -307,22 +311,43 @@ export default function App() {
               <h2 className="text-2xl font-bold text-zinc-100 mb-2">الموسيقى الخلفية</h2>
               <p className="text-zinc-400 text-sm mb-4">اختر المقطع المفضل لك للاستماع إليه أثناء التصفح</p>
               
-              <form onSubmit={handleSearch} className="flex gap-2 mb-4" dir="rtl">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="ابحث عن أغنية (Albumaty)..."
-                  className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-100 focus:outline-none focus:border-orange-500 transition-colors"
-                />
+              <div className="flex bg-zinc-950 rounded-xl p-1 mb-4 border border-zinc-800">
                 <button
-                  type="submit"
-                  disabled={isSearching || !searchQuery.trim()}
-                  className="bg-orange-500 text-white p-2 rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[40px]"
+                  onClick={() => setAudioTab('music')}
+                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${audioTab === 'music' ? 'bg-zinc-800 text-orange-500' : 'text-zinc-400 hover:text-zinc-200'}`}
                 >
-                  {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+                  موسيقى/أناشيد
                 </button>
-              </form>
+                <button
+                  onClick={() => setAudioTab('quran')}
+                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${audioTab === 'quran' ? 'bg-zinc-800 text-orange-500' : 'text-zinc-400 hover:text-zinc-200'}`}
+                >
+                  القرآن الكريم
+                </button>
+              </div>
+
+              {audioTab === 'music' ? (
+                <form onSubmit={handleSearch} className="flex gap-2 mb-4" dir="rtl">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="ابحث عن أغنية (Albumaty)..."
+                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-100 focus:outline-none focus:border-orange-500 transition-colors"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSearching || !searchQuery.trim()}
+                    className="bg-orange-500 text-white p-2 rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[40px]"
+                  >
+                    {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+                  </button>
+                </form>
+              ) : (
+                <div className="mb-4">
+                  <QuranAudioTab onAddTrack={handleAddDirectTrack} />
+                </div>
+              )}
 
               {audioError && (
                 <p className="text-red-500 text-xs mb-4 bg-red-500/10 p-2 rounded-lg border border-red-500/20">
@@ -332,7 +357,7 @@ export default function App() {
             </div>
             
             <div className="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar" dir="rtl">
-              {searchResults.length > 0 ? (
+              {audioTab === 'music' && searchResults.length > 0 ? (
                 <div className="mb-4">
                   <h3 className="text-xs font-bold text-zinc-500 mb-2 px-2">نتائج البحث:</h3>
                   {searchResults.map(track => (
@@ -539,5 +564,88 @@ function NavItem({ icon, label, isActive, onClick }: { icon: React.ReactNode, la
       </div>
       <span className="text-[11px] font-bold tracking-wide">{label}</span>
     </button>
+  );
+}
+
+function QuranAudioTab({ onAddTrack }: { onAddTrack: (track: { id: string, name: string, url: string }) => void }) {
+  const [reciters, setReciters] = useState<any[]>([]);
+  const [suwar, setSuwar] = useState<any[]>([]);
+  const [selectedReciter, setSelectedReciter] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchReciter, setSearchReciter] = useState('');
+
+  useEffect(() => {
+    Promise.all([
+      fetch('https://mp3quran.net/api/v3/reciters?language=ar').then(r => r.json()),
+      fetch('https://mp3quran.net/api/v3/suwar?language=ar').then(r => r.json())
+    ]).then(([recitersData, suwarData]) => {
+      setReciters(recitersData.reciters);
+      setSuwar(suwarData.suwar);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <div className="flex justify-center p-8"><Loader2 size={24} className="animate-spin text-orange-500" /></div>;
+
+  const filteredReciters = reciters.filter(r => r.name.includes(searchReciter));
+
+  return (
+    <div className="space-y-4" dir="rtl">
+      {!selectedReciter ? (
+        <>
+          <input
+            type="text"
+            value={searchReciter}
+            onChange={(e) => setSearchReciter(e.target.value)}
+            placeholder="ابحث عن قارئ..."
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-100 focus:outline-none focus:border-orange-500 transition-colors mb-2"
+          />
+          <div className="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+            {filteredReciters.map(r => (
+              <button
+                key={r.id}
+                onClick={() => setSelectedReciter(r)}
+                className="w-full text-right p-3 rounded-xl border border-zinc-800 bg-zinc-950/50 text-zinc-300 hover:bg-zinc-800 transition-all"
+              >
+                {r.name}
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="space-y-2">
+          <button 
+            onClick={() => setSelectedReciter(null)}
+            className="text-orange-500 text-sm font-bold mb-2 hover:underline flex items-center gap-1"
+          >
+            &rarr; عودة للقراء
+          </button>
+          <div className="max-h-60 overflow-y-auto pr-1 custom-scrollbar space-y-2">
+            {selectedReciter.moshaf[0].surah_list.split(',').map((surahId: string) => {
+              const surah = suwar.find(s => s.id.toString() === surahId);
+              if (!surah) return null;
+              return (
+                <button
+                  key={surahId}
+                  onClick={() => {
+                    const paddedId = surahId.padStart(3, '0');
+                    const url = `${selectedReciter.moshaf[0].server}${paddedId}.mp3`;
+                    onAddTrack({
+                      id: `quran_${selectedReciter.id}_${surahId}`,
+                      name: `${surah.name} - ${selectedReciter.name}`,
+                      url
+                    });
+                  }}
+                  className="w-full text-right p-3 rounded-xl border border-zinc-800 bg-zinc-950/50 text-zinc-300 hover:bg-zinc-800 transition-all flex justify-between items-center"
+                >
+                  <span>{surah.name}</span>
+                  <Download size={16} className="text-orange-500 shrink-0" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
